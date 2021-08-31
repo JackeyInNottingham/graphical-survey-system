@@ -1,0 +1,49 @@
+server:
+  port: 8989
+
+spring:
+  application:
+    name: DATACAPTURETOOL
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://192.168.56.10:3306/survey_system?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+      username: root
+      password: root
+      min-idle: 100
+      initial-size: 100
+      max-active: 500
+
+  redis:
+    host: 192.168.56.10
+    port: 6379
+    jedis:
+      pool:
+        max-active: 100
+        max-idle: 10
+        min-idle: 0
+        max-wait: -1
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.jackeyj.entity
+
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+logging:
+  level:
+    com:
+      jackeyj:
+        dao: debug
+
+picture:
+  path: "/upload/picture"

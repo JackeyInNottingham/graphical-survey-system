@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jackeyj.dao.SurveyDao">
+    <resultMap id="BaseResultMap" type="com.jackeyj.entity.Survey">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="author_id" jdbcType="INTEGER" property="authorId"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="image_number" jdbcType="INTEGER" property="imageNumber"/>
+    </resultMap>
+    <resultMap id="SurveyVoMap" type="com.jackeyj.entity.vo.SurveyVo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="author" jdbcType="VARCHAR" property="author"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="image_number" jdbcType="INTEGER" property="imageNumber"/>
+    </resultMap>
+    <resultMap id="MySurveyVoMap" type="com.jackeyj.entity.vo.MySurveyVo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="image_number" jdbcType="INTEGER" property="imageNumber"/>
+    </resultMap>
+    <resultMap id="SurveyBoardVoMap" type="com.jackeyj.entity.vo.SurveyBoardVo">
+        <id column="sid" jdbcType="INTEGER" property="id"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="author" jdbcType="VARCHAR" property="author"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <collection property="images" ofType="com.jackeyj.entity.vo.ImageVo">
+            <id column="iid" jdbcType="INTEGER" property="id"/>
+            <result column="width" jdbcType="DOUBLE" property="width"/>
+            <result column="height" jdbcType="DOUBLE" property="height"/>
+            <result column="path" jdbcType="VARCHAR" property="path"/>
+            <result column="description" jdbcType="VARCHAR" property="description"/>
+        </collection>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, title, author_id, create_time, image_number
+  </sql>
+
+    <select id="getSurveyList" resultMap="SurveyVoMap">
+    select
+        s.id, s.title, u.username author, s.create_time, s.image_number
+    from
+        t_survey s
+    left join
+        t_user u
+    on
+        s.author_id = u.id
+  </select>
+    <select id="filtrateSurveyList" resultMap="SurveyVoMap">
+        select
+        s.id, s.title, u.username author, s.create_time, s.image_number
+        from
+        t_survey s
+        left join
+        t_user u
+        on
+        s.author_id = u.id
+        <where>
+            <if test="title != null and title != ''">
+                and s.title like concat('%', #{title}, '%')
+            </if>
+            <if test="author != null and author != ''">
+                and u.username like concat('%', #{author}, '%')
+            </if>
+        </where>
+    </select>
+    <delete id="deleteSurveyById">
+    delete from
+        t_survey
+    where
+        id = #{id}
+  </delete>
+
+    <select id="getMySurveyList" resultMap="MySurveyVoMap">
+    select
+        id, title, create_time, image_number
+    from
+        t_survey
+    where
+        author_id = #{userId}
+  </select>
+    <select id="filtrateMySurveyList" resultMap="MySurveyVoMap">
+        select
+        id, title, create_time, image_number
+        from
+        t_survey
+        <where>
+            author_id = #{userId}
+            <if test="title != null and title != ''">
+                and s.title like concat('%', #{title}, '%')
+            </if>
+        </where>
+    </select>
+    <select id="getAuthorId" resultType="java.lang.Integer">
+    select
+        author_id
+    from
+        t_survey
+    where
+        id = #{id}
+  </select>
+
+    <select id="selectSurveyById" resultMap="SurveyBoardVoMap">
+        select
+            s.id sid, s.title, s.author, s.create_time,
+            i.id iid, i.width, i.height, i.path, i.description
+        from
+				(
+					select
+					    su.id, su.title, u.username author, su.create_time
+					from
+					    t_survey su
+					LEFT JOIN
+					    t_user u
+					ON
+					    su.author_id = u.id
+				    WHERE
+				        su.id = #{id}
+				)	s
+        left join
+            t_image i
+        on
+            s.id = i.survey_id
+        order by
+            i.order
+    </select>
+
+    <insert id="insertSurvey" parameterType="com.jackeyj.entity.Survey" useGeneratedKeys="true" keyProperty="id">
+        insert into
+            t_survey(title, author_id, create_time, image_number)
+        values
+            (#{title}, #{authorId}, #{createTime}, #{imageNumber})
+    </insert>
+
+    <delete id="deleteSurveyByAuthorId">
+        delete from
+            t_survey
+        where
+            author_id = #{authorId}
+    </delete>
+
+</mapper>

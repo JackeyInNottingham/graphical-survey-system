@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jackeyj.dao.AnswerDao">
+    <resultMap id="BaseResultMap" type="com.jackeyj.entity.Answer">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="image_id" jdbcType="INTEGER" property="imageId"/>
+        <result column="x" jdbcType="DOUBLE" property="x"/>
+        <result column="y" jdbcType="DOUBLE" property="y"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, image_id, x, y
+    </sql>
+
+    <delete id="deleteAnswerBySurveyId">
+    delete from
+        t_answer
+    where
+        image_id
+    in
+        (
+        select
+            id
+        from
+            t_image
+        where
+            survey_id = #{surveyId}
+        )
+    </delete>
+
+    <insert id="insertAnswers">
+        insert into
+            t_answer(image_id, x, y)
+        values
+            <foreach collection="answerVoList" item="answerVo" separator=",">
+                <foreach collection="answerVo.points" item="point" separator=",">
+                    (#{answerVo.imageId}, #{point.x}, #{point.y})
+                </foreach>
+            </foreach>
+    </insert>
+
+    <delete id="deleteAnswerByAuthorId">
+        delete from
+            t_answer
+        where
+            image_id
+        in
+            (
+                select
+                    id
+                from
+                    t_image
+                where
+                    survey_id
+                in
+                    (
+                        select
+                            id
+                        from
+                            t_survey
+                        where
+                            author_id = #{authorId}
+                    )
+            )
+    </delete>
+
+</mapper>

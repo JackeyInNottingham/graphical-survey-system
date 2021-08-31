@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jackeyj.dao.UserDao">
+    <resultMap id="BaseResultMap" type="com.jackeyj.entity.User">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="role_id" jdbcType="INTEGER" property="roleId"/>
+        <result column="status" jdbcType="BOOLEAN" property="status"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, username, password, email, role_id, status
+    </sql>
+
+    <select id="login" resultType="com.jackeyj.entity.vo.UserInfoVo">
+        SELECT
+            u.id, u.username, u.status, r.`name` role
+        FROM (
+            SELECT
+                id, username, status, role_id
+            FROM
+                t_user
+            WHERE
+                username = #{username,jdbcType=VARCHAR}
+            AND
+                `password` = #{password,jdbcType=VARCHAR}
+                ) u
+        LEFT JOIN
+            t_role r
+        ON
+            u.role_id = r.id
+    </select>
+
+    <select id="selectByUsername" resultType="java.lang.String">
+        select
+            username
+        from t_user
+        where
+            username = #{username,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertUser" parameterType="com.jackeyj.entity.User" keyProperty="id" useGeneratedKeys="true">
+        insert into
+            t_user
+            (username, password, email,
+            role_id, status)
+        values
+            (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
+            #{roleId,jdbcType=INTEGER}, #{status,jdbcType=BOOLEAN})
+    </insert>
+
+    <select id="getUserVoList" resultType="com.jackeyj.entity.vo.UserVo">
+        SELECT
+            u.id,
+            u.username,
+            u.email,
+            r.`name` role,
+            u.status
+        FROM
+	        t_user u
+	    LEFT JOIN
+	        t_role r
+	    ON
+	        u.role_id = r.id
+	    order by
+	        u.id
+    </select>
+
+    <select id="filtrateUser" resultType="com.jackeyj.entity.vo.UserVo">
+        SELECT
+            u.id,
+            u.username,
+            u.email,
+            u.status,
+            r.`name` role
+        FROM
+        (
+        SELECT
+            id, username, email, role_id, status
+        FROM
+            t_user
+        <where>
+            <if test="username != null and username != ''">
+                and username like concat( '%', #{username,jdbcType=VARCHAR}, '%' )
+            </if>
+            <if test="status != null">
+                and status = #{status,jdbcType=BOOLEAN}
+            </if>
+            <if test="roleId != null and roleId != ''">
+                and role_id = #{roleId,jdbcType=INTEGER}
+            </if>
+        </where>
+        ) u
+        LEFT JOIN
+            t_role r
+        ON
+            u.role_id = r.id
+        order by
+            u.id
+    </select>
+
+    <select id="getUserInfo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from
+        t_user
+        where
+        id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.jackeyj.entity.User" useGeneratedKeys="true">
+        insert into
+            t_user
+            (username, password, email,
+            role_id, status)
+        values
+            (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR},
+            #{roleId,jdbcType=INTEGER}, #{status,jdbcType=BOOLEAN})
+    </insert>
+
+    <update id="updateUserInfo" parameterType="com.jackeyj.entity.User">
+        update
+            t_user
+        set
+            `password` = #{password,jdbcType=VARCHAR},
+            email = #{email,jdbcType=VARCHAR},
+            role_id = #{roleId,jdbcType=INTEGER},
+            status = #{status,jdbcType=BOOLEAN}
+        where
+            id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <delete id="deleteUserById">
+        delete
+        from
+            t_user
+        where
+            id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <select id="getPassword" resultType="java.lang.String">
+        select
+            password
+        from
+            t_user
+        where
+            id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <update id="updatePassword">
+        update
+            t_user
+        set
+            `password` = #{newPassword,jdbcType=VARCHAR}
+        where
+            id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
