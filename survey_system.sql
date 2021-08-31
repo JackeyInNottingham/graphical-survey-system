@@ -13,7 +13,7 @@
 
  Date: 14/08/2021 19:50:36
 */
-CREATE TABLE `survey_system`;
+CREATE DATABASE `survey_system`;
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
